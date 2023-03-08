@@ -10,10 +10,11 @@ const config: Phaser.Types.Core.GameConfig = {
 	physics: {
 		default: 'arcade',
 		arcade: {
-			gravity: { y: 200 },
+			gravity: { y: 300 },
+			debug: true
 		},
 	},
-	scene: [HelloWorldScene],
+	scene: [HelloWorldScene]
 }
 
 export default new Phaser.Game(config)
