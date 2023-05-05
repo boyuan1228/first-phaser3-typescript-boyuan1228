@@ -12,7 +12,7 @@ export default class HelloWorldScene extends Phaser.Scene {
 	private bombs?: Phaser.Physics.Arcade.Group
 
 	private gameOver = false
-
+	private resetText: Phaser.GameObjects.Text | undefined;
 	constructor() {
 		super('hello-world')
 	}
@@ -25,17 +25,19 @@ export default class HelloWorldScene extends Phaser.Scene {
 		this.load.spritesheet('dude', 'assets/dude.png', { frameWidth: 32, frameHeight: 48 });
 	}
 
-	create() {
+	create() {        
+	
+
 		this.add.image(400, 300, 'sky');
 		//this.add.image(400, 300, 'star');
 		this.platforms = this.physics.add.staticGroup();
-		const ground = this.platforms.create(400, 568, 'ground') as Phaser.Physics.Arcade.Sprite
+		const ground = this.platforms.create(400, 600, 'ground') as Phaser.Physics.Arcade.Sprite
 
 		ground.setScale(2).refreshBody()
 
 		this.platforms.create(600, 400, 'ground');
-		this.platforms.create(50, 250, 'ground');
-		this.platforms.create(750, 220, 'ground');
+		//this.platforms.create(50, 250, 'ground');
+		//this.platforms.create(750, 220, 'ground');
 
 		this.player = this.physics.add.sprite(100, 450, 'dude');
 		this.player.setBounce(0.2);
@@ -86,6 +88,15 @@ export default class HelloWorldScene extends Phaser.Scene {
 			fontSize: '32px', 
 			fill: '#ff0000'
 		})
+		this.resetText = this.add.text(32, 50, 'Reset', { 
+			fontSize: '32px', 
+			fill: '#ff0000'
+		});
+		this.resetText.on('pointerdown', () => {
+            this.scene.restart();
+        });
+		this.resetText.setInteractive();
+		
 
 
 
@@ -97,7 +108,8 @@ export default class HelloWorldScene extends Phaser.Scene {
 	}
 
 	private handleHitBomb(player: Phaser.GameObjects.GameObject, b: Phaser.GameObjects.GameObject) {
-		this.physics.pause();
+		//restart game
+		this.scene.restart();
 
 		this.player?.setTint(0xff0000);
 
@@ -108,33 +120,40 @@ export default class HelloWorldScene extends Phaser.Scene {
 
 
 	private handleCollectStar(player: Phaser.GameObjects.GameObject, s: Phaser.GameObjects.GameObject) {
-		const star = s as Phaser.Physics.Arcade.Image
+		const star = s as Phaser.Physics.Arcade.Image;
 		star.disableBody(true, true);
-
-		this.score += 10
-		this.scoreText?.setText('Score: ' + this.score)
-		
-		if (this.stars?.countActive(true) === 0) 
-		{
-			this.stars.children.iterate(c =>{
-				const child = c as Phaser.Physics.Arcade.Image
+	
+		this.score += 10;
+		this.scoreText?.setText('Score: ' + this.score);
+	
+		if (this.stars?.countActive(true) === 0) {
+			this.stars.children.iterate(c => {
+				const child = c as Phaser.Physics.Arcade.Image;
 				child.enableBody(true, child.x, 0, true, true);
-
 			});
-
-			
-			if (!this.player){
-				return
+	
+			if (!this.player) {
+				return;
 			}
-			const x = (this.player.x < 400) 
-				? Phaser.Math.Between(400, 800) 
-				: Phaser.Math.Between(0, 400);
-
+	
+			const x = (this.player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+	
 			const bomb: Phaser.Physics.Arcade.Image = this.bombs?.create(x, 16, 'bomb');
 			bomb.setBounce(1);
 			bomb.setCollideWorldBounds(true);
-			bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
-
+			bomb.setVelocity(Phaser.Math.Between(-200, 200), 10);
+			
+			// Check if the player has collected 12 stars
+			if (this.score >= 120) {
+				// Add 2 bombs to the game
+				for (let i = 0; i < 2; i++) {
+					const x = Phaser.Math.Between(0, this.physics.world.bounds.width);
+					const bomb: Phaser.Physics.Arcade.Image = this.bombs?.create(x, 16, 'bomb');
+					bomb.setBounce(1);
+					bomb.setCollideWorldBounds(true);
+					bomb.setVelocity(Phaser.Math.Between(-200, 200), 10);
+				}
+			}
 		}
 	}
 
@@ -142,12 +161,12 @@ export default class HelloWorldScene extends Phaser.Scene {
 		if (this.cursors.left?.isDown) {
 			this.player?.setVelocityX(-160);
 
-			this.player?.anims.play('left', true);
+			//this.player?.anims.play('left', true);
 		}
 		else if (this.cursors.right?.isDown) {
 			this.player?.setVelocityX(160);
 
-			this.player?.anims.play('right', true);
+			//this.player?.anims.play('right', true);
 		}
 		else {
 			this.player?.setVelocityX(0);
@@ -161,4 +180,3 @@ export default class HelloWorldScene extends Phaser.Scene {
 
 	}
 }
-
